@@ -4,6 +4,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY verifier.py .
+COPY app ./app
+COPY reports ./reports
 
-CMD ["python", "verifier.py"]
+CMD ["python", "app/main.py"]
