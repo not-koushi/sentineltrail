@@ -32,5 +32,15 @@ services:
     ports:
       - "8080:8080"
 
+  verifier:
+    build:
+      context: ./verification-service
+    container_name: sentineltrail-verifier
+    environment:
+      DATABASE_URL: postgres://sentineltrail_app:changeme@postgres:5432/sentineltrail?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
