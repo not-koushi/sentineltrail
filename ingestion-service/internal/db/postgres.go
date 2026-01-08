@@ -8,5 +8,15 @@ import (
 )
 
 func Connect() (*sql.DB, error) {
-	return sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	if err != nill {
+		return nil, err
+	}
+
+	// Force connection validation
+	if err := db.Ping(); err != nil {
+		return nil,err
+	}
+
+	return db, nil
 }

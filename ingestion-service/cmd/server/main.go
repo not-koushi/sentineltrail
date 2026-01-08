@@ -70,6 +70,7 @@ func main() {
 		)
 
 		if err != nil {
+			log.Println("DB INSERT ERROR:", err)
 			http.Error(w, "failed to insert log", http.StatusInternalServerError)
 			return
 		}
