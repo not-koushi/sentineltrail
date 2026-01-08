@@ -37,10 +37,13 @@ services:
       context: ./verification-service
     container_name: sentineltrail-verifier
     environment:
-      DATABASE_URL: postgres://sentineltrail_app:changeme@postgres:5432/sentineltrail?sslmode=disable
+      DATABASE_URL: postgres://sentineltrail_app:changeme@postgres:5432/sentineltrail
     depends_on:
       postgres:
         condition: service_healthy
+    volumes:
+      - ./verification-service/reports:/app/reports
+    
 
 volumes:
   postgres_data:
