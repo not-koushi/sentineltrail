@@ -7,14 +7,18 @@ def compute_hash(payload: str, previous_hash: str) -> str:
     return h.hexdigest()
 
 def verify_chain(rows):
-    last_hash = None
-
-    for log_id, payload, prev_hash, stored_hash in rows:
-        expected = compute_hash(payload, last_hash)
-
-        if expected != stored_hash:
+    previous_row_hash = None
+    
+    for log_id, payload, prev_hash, current_hash in rows:
+        # Rule 1: previous_hash must match previosu row's current_hash
+        if prev_hash != previous_row_hash:
             return False, log_id
 
-        last_hash = stored_hash
+        # Rule 2: current_hash must match computed hash (payload + previous_hash)
+        expected = compute_hash(payload, prev_hash)
 
+        if expected != current_hash:
+            return False, log_id
+
+        previous_row_hash = current_hash
     return True, None
