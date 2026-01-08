@@ -1,25 +1,37 @@
 package main
 
 import (
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 
-	"sentineltrail/ingestion/internal/db"
-	"sentineltrail/ingestion/internal/hashing"
+	_ "github.com/lib/pq"
 )
 
-type AuditLog struct {
+type AuditRequest struct {
 	ServiceID string          `json:"service_id"`
 	EventType string          `json:"event_type"`
 	ActorID   string          `json:"actor_id"`
 	Payload   json.RawMessage `json:"payload"`
 }
 
+func computeHash(input string) string {
+	hash := sha256.Sum256([]byte(input))
+	return hex.EncodeToString(hash[:])
+}
+
 func main() {
-	database, err := db.Connect()
+	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	if err := db.Ping(); err != nil {
 		log.Fatal(err)
 	}
 
@@ -29,43 +41,46 @@ func main() {
 	})
 
 	http.HandleFunc("/ingest", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			return
-		}
+		var req AuditRequest
 
-		var logEntry AuditLog
-		if err := json.NewDecoder(r.Body).Decode(&logEntry); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			http.Error(w, "invalid json", http.StatusBadRequest)
 			return
 		}
 
-		var prevHash sql.NullString
-		err = database.QueryRow(
-			"SELECT current_hash FROM audit_logs ORDER BY log_id DESC LIMIT 1",
-		).Scan(&prevHash)
+		// Fetch previous hash
+		var previousHash sql.NullString
+		err := db.QueryRow(`
+			SELECT current_hash
+			FROM audit_logs
+			ORDER BY log_id DESC
+			LIMIT 1
+		`).Scan(&previousHash)
 
 		if err != nil && err != sql.ErrNoRows {
 			http.Error(w, "failed to read previous hash", http.StatusInternalServerError)
 			return
 		}
 
-		if err == sql.ErrNoRows {
-			prevHash = sql.NullString{Valid: false}
+		// Canonical hash input (THIS IS THE KEY FIX)
+		hashInput := string(req.Payload)
+		if previousHash.Valid {
+			hashInput = hashInput + previousHash.String
 		}
 
-		currentHash := hashing.ComputeHash(logEntry.Payload, prevHash.String)
+		currentHash := computeHash(hashInput)
 
-		_, err = database.Exec(`
+		_, err = db.Exec(`
 			INSERT INTO audit_logs
-			(service_id, event_type, actor_id, payload, previous_hash, current_hash)
-			VALUES ($1,$2,$3,$4,$5,$6)
+			(service_id, event_type, actor_id, payload, hash_input, previous_hash, current_hash)
+			VALUES ($1,$2,$3,$4,$5,$6,$7)
 		`,
-			logEntry.ServiceID,
-			logEntry.EventType,
-			logEntry.ActorID,
-			logEntry.Payload,
-			prevHash.String,
+			req.ServiceID,
+			req.EventType,
+			req.ActorID,
+			req.Payload,
+			hashInput,
+			previousHash,
 			currentHash,
 		)
 
