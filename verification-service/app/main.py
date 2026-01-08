@@ -3,13 +3,16 @@ from app.verifier import verify_chain
 from app.merkle import build_merkle_root
 import json
 from datetime import datetime, timezone
+import os
 
 def main():
+    os.makedirs("reports", exist_ok=True)
+
     conn = get_connection()
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT log_id, payload::text, previous_hash, current_hash
+        SELECT log_id, hash_input, previous_hash, current_hash
         FROM audit_logs
         ORDER BY log_id
     """)
@@ -25,18 +28,22 @@ def main():
         print(f"Merkle root: {merkle_root}")
 
         with open("reports/latest.txt", "w") as f:
-            f.write(f"VERIFIED at {datetime.utcnow()}\n")
+            f.write(f"VERIFIED at {datetime.now(timezone.utc).isoformat()}\n")
             f.write(f"Merkle root: {merkle_root}\n")
 
     else:
         print(f"TAMPER DETECTED at log_id = {bad_log}")
 
         with open("reports/tamper_report.json", "w") as f:
-            json.dump({
-                "status": "tampered",
-                "log_id": bad_log,
-                "timestamp": datetime.now(timezone.utc).isoformat()
-            }, f, indent=2)
+            json.dump(
+                {
+                    "status": "tampered",
+                    "log_id": bad_log,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                },
+                f,
+                indent=2,
+            )
 
 if __name__ == "__main__":
     main()
