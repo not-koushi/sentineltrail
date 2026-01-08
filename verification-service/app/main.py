@@ -2,7 +2,7 @@ from app.db import get_connection
 from app.verifier import verify_chain
 from app.merkle import build_merkle_root
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 def main():
     conn = get_connection()
@@ -35,7 +35,7 @@ def main():
             json.dump({
                 "status": "tampered",
                 "log_id": bad_log,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }, f, indent=2)
 
 if __name__ == "__main__":
