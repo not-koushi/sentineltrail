@@ -1,24 +1,21 @@
 import hashlib
 
-def compute_hash(payload: str, previous_hash: str) -> str:
-    h = hashlib.sha256()
-    h.update(payload.encode())
-    h.update((previous_hash or "").encode())
-    return h.hexdigest()
+def compute_hash(hash_input: str) -> str:
+    return hashlib.sha256(hash_input.encode()).hexdigest()
 
 def verify_chain(rows):
     previous_row_hash = None
-    
-    for log_id, payload, prev_hash, current_hash in rows:
-        # Rule 1: previous_hash must match previosu row's current_hash
+
+    for log_id, hash_input, prev_hash, current_hash in rows:
+        # 1. Chain linkage
         if prev_hash != previous_row_hash:
             return False, log_id
 
-        # Rule 2: current_hash must match computed hash (payload + previous_hash)
-        expected = compute_hash(payload, prev_hash)
-
+        # 2. Hash integrity
+        expected = compute_hash(hash_input)
         if expected != current_hash:
             return False, log_id
 
         previous_row_hash = current_hash
+
     return True, None
