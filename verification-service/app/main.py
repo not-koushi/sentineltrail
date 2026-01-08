@@ -12,11 +12,6 @@ def main():
     conn = get_connection()
     cur = conn.cursor()
 
-    # Debug: prove verifier is reading the correct DB
-    cur.execute("SELECT COUNT(*) FROM audit_logs;")
-    count = cur.fetchone()[0]
-    print(f"[DEBUG] verifier sees {count} audit logs")
-
     # Fetch canonical verification data
     cur.execute("""
         SELECT log_id, hash_input, previous_hash, current_hash
