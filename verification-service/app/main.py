@@ -11,6 +11,11 @@ def main():
     conn = get_connection()
     cur = conn.cursor()
 
+    # --
+    cur.execute("SELECT COUNT(*) FROM audit_logs;")
+    count = cur.fetchone()[0]
+    print(f"[DEBUG] verifier sees {count} audit logs")
+
     cur.execute("""
         SELECT log_id, hash_input, previous_hash, current_hash
         FROM audit_logs
