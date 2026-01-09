@@ -17,14 +17,20 @@ function App() {
   if (!status) return null;
 
   return (
-    <>
+    <div style={{padding: "20px", fontFamily: "sans-serif"}}>
+      <h1>SentinelTrail Audit Dashboard</h1>
+
+      <p style={{color: "#666"}}>
+        Cryptographic integrity monitoring for audit logs
+      </p>
+
       <StatusBadge status={status} />
       <IncidentBanner status={status} />
       <Timeline
         logs={logs}
         highlightId={status.detected_at_log}
       />
-    </>
+    </div>
   );
 }
 
