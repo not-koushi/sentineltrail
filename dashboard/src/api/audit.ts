@@ -21,6 +21,7 @@ export async function fetchAuditLogs(): Promise<AuditLog[]> {
 
 export async function fetchVerificationStatus(): Promise<VerificationStatus> {
   return {
-    status: "verified",
+    status: "tampered",
+    detected_at_log: 1,
   };
 }
