@@ -17,7 +17,7 @@ function App() {
   if (!status) return null;
 
   return (
-    <div style={{padding: "20px", fontFamily: "sans-serif"}}>
+    <div style={{padding: "20px", fontFamily: "monospace"}}>
       <h1>SentinelTrail Audit Dashboard</h1>
 
       <p style={{color: "#666"}}>
