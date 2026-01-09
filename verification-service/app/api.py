@@ -1,8 +1,12 @@
 from flask import Flask, jsonify
+from flask_cors import CORS
+
 from app.db import get_connection
 from app.verifier import verify_chain
 
 app = Flask(__name__)
+CORS(app)
+
 
 @app.route("/api/status")
 def status():
@@ -19,7 +23,7 @@ def status():
     verified, bad_log = verify_chain(rows)
 
     if verified:
-        return jsonify({ "status": "verified" })
+        return jsonify({"status": "verified"})
     else:
         return jsonify({
             "status": "tampered",
@@ -52,3 +56,8 @@ def logs():
     ]
 
     return jsonify(logs)
+
+
+if __name__ == "__main__":
+    # Bind to 0.0.0.0 for Docker
+    app.run(host="0.0.0.0", port=5000)
