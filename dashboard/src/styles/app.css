@@ -13,3 +13,11 @@
   background: #fee2e2;
   color: #991b1b;
 }
+
+.alert {
+  background: #7f1d1d;
+  color: white;
+  padding: 12px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+}
