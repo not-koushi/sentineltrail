@@ -1,0 +1,15 @@
+.badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.ok {
+  background: #e6fffa;
+  color: #065f46;
+}
+
+.fail {
+  background: #fee2e2;
+  color: #991b1b;
+}
