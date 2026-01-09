@@ -7,4 +7,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app ./app
 COPY reports ./reports
 
-CMD ["python", "-m", "app.main"]
+CMD ["python", "-m", "app.api"]
