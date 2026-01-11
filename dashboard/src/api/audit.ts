@@ -17,3 +17,10 @@ export async function fetchVerificationStatus(): Promise<VerificationStatus> {
   }
   return res.json();
 }
+
+export async function runVerification(): Promise<VerificationStatus> {
+  const res = await fetch("http://localhost:5001/api/verify/run", {
+    method: "POST",
+  });
+  return res.json();
+}
