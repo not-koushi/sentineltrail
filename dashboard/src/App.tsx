@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import { fetchAuditLogs, fetchVerificationStatus } from "./api/audit";
+import {
+  fetchAuditLogs,
+  fetchVerificationStatus,
+  runVerification,
+} from "./api/audit";
 import type { AuditLog, VerificationStatus } from "./types/audit";
 import { Timeline } from "./components/Timeline";
 import { StatusBadge } from "./components/StatusBadge";
@@ -25,6 +29,18 @@ function App() {
       setStatus(statusData);
     } catch (err) {
       setError("Failed to load audit data. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRerunVerification = async () => {
+    try {
+      setLoading(true);
+      const result = await runVerification();
+      setStatus(result);
+    } catch (err) {
+      setError("Failed to re-run verification.");
     } finally {
       setLoading(false);
     }
@@ -71,13 +87,25 @@ function App() {
       {/* Manual refresh control */}
       <button
         onClick={loadData}
-        style={{ marginBottom: "10px", cursor: "pointer" }}
+        style={{ marginRight: "10px", cursor: "pointer" }}
       >
         Refresh
       </button>
 
-      <StatusBadge status={status} />
+      {/* Re-run verification action */}
+      <button
+        onClick={handleRerunVerification}
+        style={{ cursor: "pointer" }}
+      >
+        Re-run Verification
+      </button>
+
+      <div style={{ marginTop: "15px" }}>
+        <StatusBadge status={status} />
+      </div>
+
       <IncidentBanner status={status} />
+
       <Timeline
         logs={logs}
         highlightId={status.detected_at_log}
