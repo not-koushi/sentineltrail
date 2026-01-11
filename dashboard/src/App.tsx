@@ -9,9 +9,17 @@ function App() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [status, setStatus] = useState<VerificationStatus | null>(null);
 
+  const loadData = async () => {
+    const [logsData, statusData] = await Promise.all([
+      fetchAuditLogs(),
+      fetchVerificationStatus(),
+    ]);
+    setLogs(logsData);
+    setStatus(statusData);
+  };
+
   useEffect(() => {
-    fetchAuditLogs().then(setLogs);
-    fetchVerificationStatus().then(setStatus);
+    loadData();
   }, []);
 
   if (!status) return null;
@@ -23,6 +31,15 @@ function App() {
       <p style={{color: "#666"}}>
         Cryptographic integrity monitoring for audit logs
       </p>
+
+      {/*Manual refresh control*/}
+      <button
+        onClick={loadData}
+        style={{ marginBottom: "10px", cursor: "pointer" }}
+      >
+        Refresh
+      </button>
+
 
       <StatusBadge status={status} />
       <IncidentBanner status={status} />
